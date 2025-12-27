@@ -1,183 +1,53 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>SPPD BOK</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-    }
-    header {
-      background: #1e88e5;
-      color: white;
-      padding: 15px;
-      font-size: 22px;
-      text-align: center;
-    }
-    nav {
-      display: flex;
-      background: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,.1);
-    }
-    nav button {
-      flex: 1;
-      padding: 15px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    nav button:hover {
-      background: #e3f2fd;
-    }
-    .content {
-      padding: 20px;
-    }
-    .box {
-      background: white;
-      padding: 20px;
-      border-radius: 6px;
-      box-shadow: 0 2px 4px rgba(0,0,0,.1);
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 10px;
-    }
-    button.primary {
-      background: #1e88e5;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      cursor: pointer;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    table th, table td {
-      border: 1px solid #ddd;
-      padding: 8px;
-      text-align: left;
-    }
-    table th {
-      background: #f1f1f1;
-    }
-    @media print {
-      nav, header, button { display: none; }
-    }
-  </style>
+  <title>Dashboard SPPD BOK</title>
 </head>
 <body>
 
-<header>📘 DASHBOARD SPPD BOK</header>
+<script type="module" src="auth.js"></script>
 
-<nav>
-  <button onclick="showMenu('input')">Input</button>
-  <button onclick="showMenu('rekap')">Rekap</button>
-  <button onclick="cetak()">Cetak</button>
-</nav>
+<h1>DASHBOARD SPPD BOK</h1>
 
-<div class="content">
+<button onclick="show('input')">Input</button>
+<button onclick="show('rekap')">Rekap</button>
+<button onclick="window.print()">Cetak</button>
 
-  <!-- INPUT -->
-  <div id="input" class="box">
-    <h3>Input SPPD</h3>
-    <input id="nama" placeholder="Nama Pegawai">
-    <input id="tujuan" placeholder="Tujuan Perjalanan">
-    <input id="tanggal" type="date">
-    <input id="biaya" type="number" placeholder="Biaya (Rp)">
-    <button class="primary" onclick="simpanData()">Simpan Data</button>
-  </div>
+<hr>
 
-  <!-- REKAP -->
-  <div id="rekap" class="box" style="display:none">
-    <h3>Rekap SPPD</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Nama</th>
-          <th>Tujuan</th>
-          <th>Tanggal</th>
-          <th>Biaya</th>
-        </tr>
-      </thead>
-      <tbody id="dataTabel"></tbody>
-    </table>
-  </div>
-
+<div id="input">
+  <h3>Input SPPD</h3>
+  <input id="nama" placeholder="Nama"><br>
+  <input id="tujuan" placeholder="Tujuan"><br>
+  <input id="tanggal" type="date"><br>
+  <input id="biaya" placeholder="Biaya"><br><br>
+  <button onclick="simpanSPPD()">Simpan Data</button>
 </div>
 
-<script type="module">
-  // ================= FIREBASE =================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<div id="rekapDiv" style="display:none">
+  <h3>Rekap SPPD</h3>
+  <table border="1">
+    <thead>
+      <tr>
+        <th>Nama</th>
+        <th>Tujuan</th>
+        <th>Tanggal</th>
+        <th>Biaya</th>
+      </tr>
+    </thead>
+    <tbody id="rekap"></tbody>
+  </table>
+  <button onclick="loadRekap()">Muat Data</button>
+</div>
 
-  const firebaseConfig = {
-    apiKey: "API_KEY",
-    authDomain: "PROJECT.firebaseapp.com",
-    projectId: "PROJECT_ID",
-    storageBucket: "PROJECT.appspot.com",
-    messagingSenderId: "SENDER_ID",
-    appId: "APP_ID"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // ================= MENU =================
-  window.showMenu = (menu) => {
-    document.getElementById("input").style.display = "none";
-    document.getElementById("rekap").style.display = "none";
-    document.getElementById(menu).style.display = "block";
-
-    if (menu === "rekap") loadData();
-  };
-
-  // ================= SIMPAN DATA =================
-  window.simpanData = async () => {
-    await addDoc(collection(db, "sppd"), {
-      nama: nama.value,
-      tujuan: tujuan.value,
-      tanggal: tanggal.value,
-      biaya: biaya.value,
-      created: new Date()
-    });
-
-    alert("Data berhasil disimpan");
-
-    nama.value = "";
-    tujuan.value = "";
-    tanggal.value = "";
-    biaya.value = "";
-  };
-
-  // ================= AMBIL DATA =================
-  async function loadData() {
-    const tbody = document.getElementById("dataTabel");
-    tbody.innerHTML = "";
-
-    const snapshot = await getDocs(collection(db, "sppd"));
-    snapshot.forEach(doc => {
-      const d = doc.data();
-      tbody.innerHTML += `
-        <tr>
-          <td>${d.nama}</td>
-          <td>${d.tujuan}</td>
-          <td>${d.tanggal}</td>
-          <td>Rp ${Number(d.biaya).toLocaleString()}</td>
-        </tr>
-      `;
-    });
-  }
-
-  // ================= CETAK =================
-  window.cetak = () => {
-    window.print();
-  };
+<script>
+function show(x){
+  document.getElementById("input").style.display = x === "input" ? "block" : "none";
+  document.getElementById("rekapDiv").style.display = x === "rekap" ? "block" : "none";
+}
 </script>
+
+<script type="module" src="sppd.js"></script>
 
 </body>
 </html>
