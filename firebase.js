@@ -1,9 +1,8 @@
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-export const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "API_KEY_KAMU",
   authDomain: "sppd-dc087.firebaseapp.com",
   projectId: "sppd-dc087",
@@ -15,4 +14,3 @@ export const firebaseConfig = {
 export const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
 export const auth = getAuth(app);
-</script>
