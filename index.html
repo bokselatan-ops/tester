@@ -1,9 +1,110 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>SPPD BOK</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+    }
+    header {
+      background: #2c7be5;
+      color: white;
+      padding: 15px;
+      text-align: center;
+      font-size: 22px;
+    }
+    nav {
+      display: flex;
+      background: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+    nav button {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    nav button:hover {
+      background: #e9ecef;
+    }
+    .content {
+      padding: 20px;
+    }
+    .box {
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,.1);
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0 10px;
+    }
+    button.primary {
+      background: #2c7be5;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table th, table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+    table th {
+      background: #f1f1f1;
+    }
+  </style>
+</head>
 <body>
 
-<button onclick="simpan()">Simpan Data</button>
-<button onclick="ambil()">Ambil Data</button>
+<header>📘 SPPD BOK</header>
+
+<nav>
+  <button onclick="show('input')">Input</button>
+  <button onclick="show('rekap')">Rekap</button>
+  <button onclick="cetak()">Cetak</button>
+</nav>
+
+<div class="content">
+
+  <!-- INPUT -->
+  <div id="input" class="box">
+    <h3>Input SPPD</h3>
+    <input id="nama" placeholder="Nama Pegawai">
+    <input id="tujuan" placeholder="Tujuan">
+    <input id="tanggal" type="date">
+    <input id="biaya" type="number" placeholder="Biaya">
+    <button class="primary" onclick="simpan()">Simpan</button>
+  </div>
+
+  <!-- REKAP -->
+  <div id="rekap" class="box" style="display:none">
+    <h3>Rekap SPPD</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Tujuan</th>
+          <th>Tanggal</th>
+          <th>Biaya</th>
+        </tr>
+      </thead>
+      <tbody id="tabel"></tbody>
+    </table>
+  </div>
+
+</div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -21,19 +122,42 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  window.simpan = async () => {
-    await addDoc(collection(db, "users"), {
-      nama: "Andi",
-      umur: 21
-    });
-    alert("Data tersimpan");
+  window.show = (menu) => {
+    document.getElementById("input").style.display = "none";
+    document.getElementById("rekap").style.display = "none";
+    document.getElementById(menu).style.display = "block";
+    if (menu === "rekap") loadData();
   };
 
-  window.ambil = async () => {
-    const snapshot = await getDocs(collection(db, "users"));
-    snapshot.forEach(doc => {
-      console.log(doc.id, doc.data());
+  window.simpan = async () => {
+    await addDoc(collection(db, "sppd"), {
+      nama: nama.value,
+      tujuan: tujuan.value,
+      tanggal: tanggal.value,
+      biaya: biaya.value
     });
+    alert("Data tersimpan");
+    nama.value = tujuan.value = tanggal.value = biaya.value = "";
+  };
+
+  async function loadData() {
+    const tbody = document.getElementById("tabel");
+    tbody.innerHTML = "";
+    const snapshot = await getDocs(collection(db, "sppd"));
+    snapshot.forEach(doc => {
+      const d = doc.data();
+      tbody.innerHTML += `
+        <tr>
+          <td>${d.nama}</td>
+          <td>${d.tujuan}</td>
+          <td>${d.tanggal}</td>
+          <td>${d.biaya}</td>
+        </tr>`;
+    });
+  }
+
+  window.cetak = () => {
+    window.print();
   };
 </script>
 
